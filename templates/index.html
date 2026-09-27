@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}FitBuddy – AI Fitness Plan Generator using Gemini Models{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-glow"></div>
+    <div class="container hero-content">
+        <div class="hero-badge">
+            <i class="fa-solid fa-microchip"></i> Powered by Google Gemini AI
+        </div>
+        <h1 class="hero-title">
+            Transform Your Fitness With <span>AI Precision</span>
+        </h1>
+        <p class="hero-subtitle">
+            Generate a personalized 7-day workout split, custom macronutrient targets, and scientific recovery protocols tailored to your anatomy, schedule, and goals.
+        </p>
+
+        <div class="hero-stats-row">
+            <div class="hero-stat-card">
+                <div class="stat-number">7-Day</div>
+                <div class="stat-label">Complete Splits</div>
+            </div>
+            <div class="hero-stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Custom To Goals</div>
+            </div>
+            <div class="hero-stat-card">
+                <div class="stat-number">Adaptive</div>
+                <div class="stat-label">Feedback Revisions</div>
+            </div>
+            <div class="hero-stat-card">
+                <div class="stat-number">{{ total_plans_count }}</div>
+                <div class="stat-label">Generated Plans</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container form-section-wrapper">
+    <div class="form-card">
+        <div class="form-header">
+            <div class="form-header-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div>
+                <h2>Build Your Personalized Fitness Blueprint</h2>
+                <p>Provide your physical metrics and training preferences for the Gemini AI model.</p>
+            </div>
+        </div>
+
+        <form action="/generate" method="POST" id="fitnessPlanForm" class="fitness-form">
+            
+            <!-- SECTION 1: Personal Profile -->
+            <div class="form-fieldset">
+                <div class="fieldset-legend">
+                    <span class="step-num">1</span>
+                    <h3>Personal Profile</h3>
+                </div>
+                <div class="form-grid grid-3">
+                    <div class="form-group">
+                        <label for="user_name">Full Name or Nickname <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" id="user_name" name="user_name" placeholder="e.g. Alex Morgan" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <input type="number" id="age" name="age" min="14" max="100" placeholder="e.g. 26" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-venus-mars"></i>
+                            <select id="gender" name="gender" required>
+                                <option value="" disabled selected>Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Non-binary">Non-binary</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-ruler-vertical"></i>
+                            <input type="number" id="height" name="height" step="0.5" min="80" max="240" placeholder="e.g. 178">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-weight-scale"></i>
+                            <input type="number" id="weight" name="weight" step="0.5" min="30" max="300" placeholder="e.g. 74">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Goals & Experience -->
+            <div class="form-fieldset">
+                <div class="fieldset-legend">
+                    <span class="step-num">2</span>
+                    <h3>Objectives & Experience</h3>
+                </div>
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <label for="fitness_goal">Primary Fitness Goal <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-bullseye"></i>
+                            <select id="fitness_goal" name="fitness_goal" required>
+                                <option value="" disabled selected>Select your target goal</option>
+                                <option value="Fat Loss & Body Definition">Fat Loss & Muscle Definition</option>
+                                <option value="Lean Muscle Hypertrophy">Lean Muscle Hypertrophy (Building Size)</option>
+                                <option value="Strength & Powerlifting">Maximum Strength & Power</option>
+                                <option value="Cardiovascular & Athletic Conditioning">Cardiovascular & Athletic Conditioning</option>
+                                <option value="General Health, Posture & Longevity">General Health, Posture & Longevity</option>
+                                <option value="Tone & Functional Mobility">Tone & Functional Mobility</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fitness_level">Current Fitness Level <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <select id="fitness_level" name="fitness_level" required>
+                                <option value="" disabled selected>Select current level</option>
+                                <option value="Beginner (0-6 months training)">Beginner (New to consistent training)</option>
+                                <option value="Intermediate (6-24 months regular training)">Intermediate (Comfortable with main lifts)</option>
+                                <option value="Advanced (2+ years dedicated training)">Advanced (High work capacity and experience)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Logistics & Training Environment -->
+            <div class="form-fieldset">
+                <div class="fieldset-legend">
+                    <span class="step-num">3</span>
+                    <h3>Environment & Schedule</h3>
+                </div>
+                <div class="form-grid grid-3">
+                    <div class="form-group">
+                        <label for="workout_location">Training Environment <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-dumbbell"></i>
+                            <select id="workout_location" name="workout_location" required>
+                                <option value="" disabled selected>Where will you train?</option>
+                                <option value="Fully-equipped Commercial Gym">Commercial Gym (Full Equipment)</option>
+                                <option value="Home Gym with Dumbbells & Bench">Home Gym (Dumbbells & Bench)</option>
+                                <option value="Home Calisthenics / Bodyweight Only">Home (Bodyweight Only / Calisthenics)</option>
+                                <option value="Outdoor / Park / Running Track">Outdoor / Park / Track</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="available_equipment">Available Equipment</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-toolbox"></i>
+                            <input type="text" id="available_equipment" name="available_equipment" placeholder="e.g. Barbells, Dumbbells, Resistance Bands" value="Barbells, Dumbbells, Cables, Pull-up Bar">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="days_per_week">Training Days per Week <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <select id="days_per_week" name="days_per_week" required>
+                                <option value="7" selected>7-Day Program (Including active recovery & rest)</option>
+                                <option value="6">6 Days Training + 1 Rest Day</option>
+                                <option value="5">5 Days Training + 2 Rest Days</option>
+                                <option value="4">4 Days Training + 3 Rest Days</option>
+                                <option value="3">3 Days Full-Body Split</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Health, Recovery & Diet -->
+            <div class="form-fieldset">
+                <div class="fieldset-legend">
+                    <span class="step-num">4</span>
+                    <h3>Health Constraints & Nutrition</h3>
+                </div>
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <label for="injuries_limitations">Injuries or Physical Limitations</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                            <input type="text" id="injuries_limitations" name="injuries_limitations" placeholder="e.g. Mild lower back sensitivity, avoid overhead press, knee click" value="None">
+                        </div>
+                        <span class="form-hint">Gemini AI will adjust exercise choices to keep you safe and pain-free.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dietary_preference">Dietary Style</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-utensils"></i>
+                            <select id="dietary_preference" name="dietary_preference">
+                                <option value="High Protein Balanced" selected>High Protein Balanced</option>
+                                <option value="Vegetarian">Vegetarian (Dairy & Eggs)</option>
+                                <option value="Plant-Based / Vegan">Plant-Based / 100% Vegan</option>
+                                <option value="Low Carb / Ketogenic">Low Carb / Ketogenic</option>
+                                <option value="Mediterranean Diet">Mediterranean Diet</option>
+                                <option value="Pescatarian">Pescatarian</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="form-submit-row">
+                <button type="submit" id="generateBtn" class="btn btn-lg btn-primary btn-glow">
+                    <span class="btn-text"><i class="fa-solid fa-bolt-lightning"></i> Generate 7-Day Plan with Gemini</span>
+                    <span class="btn-spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing Metrics & Building Plan...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container features-section">
+    <div class="section-title-wrap">
+        <h2>Engineered for Real Athletic Progress</h2>
+        <p>Combining the analytical power of Gemini models with exercise science principles.</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <h3>7-Day Structured Split</h3>
+            <p>Every single day is planned with targeted warm-ups, optimal set & rep schemes, rest periods, and form cues.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-apple-whole"></i></div>
+            <h3>Macro & Fueling Guidance</h3>
+            <p>Targeted caloric, protein, carb, and fat recommendations alongside pre/post-workout meal timing.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3>Recovery & Injury Prevention</h3>
+            <p>Proactive protocols for mobility, foam rolling, and sleep optimization tailored to any physical limitations.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+            <h3>Feedback-Driven Adaptation</h3>
+            <p>Plans aren't static. Provide instant feedback on joint soreness or schedule changes to generate refined plans.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FitBuddy – AI Fitness Plan Generator{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="brand-logo">
+                <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="logo-text">Fit<span>Buddy</span></div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="/" class="nav-item {% if request.url.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Plan Generator
+                </a>
+                <a href="/admin" class="nav-item {% if '/admin' in request.url.path or '/plans' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i> All Plans & Admin
+                </a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="/" class="btn btn-sm btn-primary">
+                    <i class="fa-solid fa-plus"></i> New Plan
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="logo-text">Fit<span>Buddy</span></div>
+                <p>AI-driven personal fitness programming and sports nutrition powered by Google Gemini Models.</p>
+            </div>
+            <div class="footer-disclaimer">
+                <p><i class="fa-solid fa-triangle-exclamation"></i> <strong>Disclaimer:</strong> FitBuddy AI provides automated fitness guidance for educational and wellness purposes. Consult a medical or healthcare professional before beginning any new training or nutrition regimen.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 FitBuddy AI. Built with FastAPI, SQLite, SQLAlchemy & Gemini.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Script -->
+    <script src="/static/js/main.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

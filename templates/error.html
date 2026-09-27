@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Error – FitBuddy AI{% endblock %}
+
+{% block content %}
+<div class="container error-container">
+    <div class="error-card">
+        <div class="error-icon-box">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2>{{ error_title or "An Unexpected Error Occurred" }}</h2>
+        <p class="error-desc">{{ error_message or "We encountered an issue processing your request. Please check your inputs or API key." }}</p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fa-solid fa-house"></i> Return to Homepage
+            </a>
+            <a href="/admin" class="btn btn-outline">
+                <i class="fa-solid fa-users"></i> View Saved Plans
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

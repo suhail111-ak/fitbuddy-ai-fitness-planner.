@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}7-Day Plan for {{ plan.user_name }} – FitBuddy AI{% endblock %}
+
+{% block content %}
+<div class="container plan-view-container">
+
+    {% if just_updated %}
+    <div class="alert alert-success animate-fade-in">
+        <div class="alert-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="alert-content">
+            <h4>Plan Successfully Revised!</h4>
+            <p>Gemini AI has adapted your 7-day program to address your specific feedback.</p>
+        </div>
+        <button class="alert-close" onclick="this.parentElement.style.display='none'">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- Top Action & Navigation Bar -->
+    <div class="plan-top-bar">
+        <a href="/" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Create New Plan
+        </a>
+        <div class="top-bar-actions">
+            <button onclick="window.print()" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-print"></i> Print / Save PDF
+            </button>
+            <a href="/admin" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-list-check"></i> All Saved Plans
+            </a>
+            <a href="#feedbackSection" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-pen-to-square"></i> Modify Plan
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Profile Header Card -->
+    <div class="profile-summary-card">
+        <div class="profile-header-main">
+            <div class="avatar-badge">
+                <i class="fa-solid fa-user-ninja"></i>
+            </div>
+            <div class="profile-identity">
+                <div class="user-title-row">
+                    <h2>{{ plan.user_name }}'s Custom Fitness Program</h2>
+                    <span class="plan-id-badge">Plan #{{ plan.id }}</span>
+                </div>
+                <div class="profile-tags">
+                    <span class="badge badge-goal"><i class="fa-solid fa-bullseye"></i> {{ plan.fitness_goal }}</span>
+                    <span class="badge badge-level"><i class="fa-solid fa-signal"></i> {{ plan.fitness_level }}</span>
+                    <span class="badge badge-loc"><i class="fa-solid fa-location-dot"></i> {{ plan.workout_location }}</span>
+                    <span class="badge badge-diet"><i class="fa-solid fa-utensils"></i> {{ plan.dietary_preference }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-metrics-grid">
+            <div class="metric-box">
+                <span class="metric-label">Age</span>
+                <span class="metric-val">{{ plan.age }} yrs</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Gender</span>
+                <span class="metric-val">{{ plan.gender }}</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Height</span>
+                <span class="metric-val">{% if plan.height %}{{ plan.height }} cm{% else %}N/A{% endif %}</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Weight</span>
+                <span class="metric-val">{% if plan.weight %}{{ plan.weight }} kg{% else %}N/A{% endif %}</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Equipment</span>
+                <span class="metric-val text-truncate" title="{{ plan.available_equipment }}">{{ plan.available_equipment or 'Gym' }}</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Limitations</span>
+                <span class="metric-val text-truncate" title="{{ plan.injuries_limitations }}">{{ plan.injuries_limitations or 'None' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Version Switcher (If Feedback Exists) -->
+    {% if plan.feedback_applied and plan.updated_workout_plan %}
+    <div class="version-toggle-card">
+        <div class="version-info">
+            <div class="version-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Feedback Active</div>
+            <div class="version-text">
+                <strong>Feedback applied:</strong> "{{ plan.user_feedback }}"
+            </div>
+        </div>
+        <div class="version-tabs">
+            <button class="ver-tab-btn active" id="btnShowUpdated" onclick="switchPlanVersion('updated')">
+                <i class="fa-solid fa-code-compare"></i> Updated Plan (Active)
+            </button>
+            <button class="ver-tab-btn" id="btnShowOriginal" onclick="switchPlanVersion('original')">
+                <i class="fa-solid fa-clock-rotate-left"></i> Original Plan
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 7-DAY WORKOUT SCHEDULE SECTION -->
+    <div class="section-card workout-section">
+        <div class="section-card-header">
+            <div>
+                <h3><i class="fa-solid fa-calendar-week"></i> 7-Day Workout Routine</h3>
+                <p>Click on any day below to view exercise lists, warm-up drills, and coaching cues.</p>
+            </div>
+        </div>
+
+        {% set active_plan_data = plan.updated_workout_plan if (plan.feedback_applied and plan.updated_workout_plan) else plan.original_workout_plan %}
+        {% set days = active_plan_data | parse_json %}
+
+        <!-- UPDATED PLAN CONTAINER -->
+        <div id="container-updated-plan" class="plan-content-wrapper">
+            <!-- Day Selection Tabs -->
+            <div class="day-tabs-nav">
+                {% for day in days %}
+                <button class="day-tab-btn {% if loop.first %}active{% endif %}" onclick="selectDayTab('updated', {{ loop.index0 }})">
+                    <span class="tab-day-num">Day {{ day.day_number or loop.index }}</span>
+                    <span class="tab-day-name">{{ (day.focus or day.day_name or 'Training') | truncate(20, True, '...') }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Day Content Panels -->
+            <div class="day-panels-container">
+                {% for day in days %}
+                <div class="day-panel {% if loop.first %}active{% endif %}" id="panel-updated-{{ loop.index0 }}">
+                    <div class="day-panel-header">
+                        <div>
+                            <h4>{{ day.day_name or ('Day ' ~ (day.day_number or loop.index)) }}</h4>
+                            <div class="day-focus-tag"><i class="fa-solid fa-crosshairs"></i> Focus: {{ day.focus or 'General Fitness & Recovery' }}</div>
+                        </div>
+                        {% if day.changes_applied %}
+                        <div class="badge badge-changes">
+                            <i class="fa-solid fa-sparkles"></i> {{ day.changes_applied }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Warmup Box -->
+                    {% if day.warm_up %}
+                    <div class="protocol-box warmup-box">
+                        <div class="protocol-icon"><i class="fa-solid fa-fire"></i></div>
+                        <div>
+                            <strong>Dynamic Warm-up (5-8 Mins):</strong>
+                            <p>{{ day.warm_up }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Exercises Table -->
+                    <div class="exercise-table-wrapper">
+                        <table class="exercise-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">Done</th>
+                                    <th>Exercise</th>
+                                    <th>Sets</th>
+                                    <th>Reps / Duration</th>
+                                    <th>Rest</th>
+                                    <th>Form Notes & Cues</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ex in day.exercises %}
+                                <tr class="exercise-row">
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" class="ex-checkbox" title="Mark as completed">
+                                    </td>
+                                    <td class="exercise-name-cell">
+                                        <strong>{{ ex.exercise }}</strong>
+                                    </td>
+                                    <td class="badge-cell"><span class="table-badge">{{ ex.sets }}</span></td>
+                                    <td class="badge-cell"><span class="table-badge highlight">{{ ex.reps }}</span></td>
+                                    <td class="rest-cell"><i class="fa-regular fa-clock"></i> {{ ex.rest }}</td>
+                                    <td class="notes-cell">{{ ex.notes }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center empty-cell">Rest, tissue regeneration, and light stretching recommended today.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Cool-down Box -->
+                    {% if day.cool_down %}
+                    <div class="protocol-box cooldown-box">
+                        <div class="protocol-icon"><i class="fa-solid fa-wind"></i></div>
+                        <div>
+                            <strong>Cool-down & Parasympathetic Recovery:</strong>
+                            <p>{{ day.cool_down }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ORIGINAL PLAN CONTAINER (Hidden by default if feedback applied) -->
+        {% if plan.feedback_applied and plan.updated_workout_plan %}
+        {% set orig_days = plan.original_workout_plan | parse_json %}
+        <div id="container-original-plan" class="plan-content-wrapper hidden">
+            <div class="day-tabs-nav">
+                {% for day in orig_days %}
+                <button class="day-tab-btn {% if loop.first %}active{% endif %}" onclick="selectDayTab('original', {{ loop.index0 }})">
+                    <span class="tab-day-num">Day {{ day.day_number or loop.index }}</span>
+                    <span class="tab-day-name">{{ (day.focus or day.day_name or 'Training') | truncate(20, True, '...') }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <div class="day-panels-container">
+                {% for day in orig_days %}
+                <div class="day-panel {% if loop.first %}active{% endif %}" id="panel-original-{{ loop.index0 }}">
+                    <div class="day-panel-header">
+                        <div>
+                            <h4>{{ day.day_name or ('Day ' ~ (day.day_number or loop.index)) }} (Original)</h4>
+                            <div class="day-focus-tag"><i class="fa-solid fa-crosshairs"></i> Focus: {{ day.focus or 'General' }}</div>
+                        </div>
+                    </div>
+
+                    {% if day.warm_up %}
+                    <div class="protocol-box warmup-box">
+                        <div class="protocol-icon"><i class="fa-solid fa-fire"></i></div>
+                        <div><strong>Warm-up:</strong> <p>{{ day.warm_up }}</p></div>
+                    </div>
+                    {% endif %}
+
+                    <div class="exercise-table-wrapper">
+                        <table class="exercise-table">
+                            <thead>
+                                <tr>
+                                    <th>Exercise</th>
+                                    <th>Sets</th>
+                                    <th>Reps</th>
+                                    <th>Rest</th>
+                                    <th>Form Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ex in day.exercises %}
+                                <tr>
+                                    <td><strong>{{ ex.exercise }}</strong></td>
+                                    <td><span class="table-badge">{{ ex.sets }}</span></td>
+                                    <td><span class="table-badge highlight">{{ ex.reps }}</span></td>
+                                    <td>{{ ex.rest }}</td>
+                                    <td>{{ ex.notes }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if day.cool_down %}
+                    <div class="protocol-box cooldown-box">
+                        <div class="protocol-icon"><i class="fa-solid fa-wind"></i></div>
+                        <div><strong>Cool-down:</strong> <p>{{ day.cool_down }}</p></div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- NUTRITION & RECOVERY DUAL SECTION -->
+    <div class="dual-grid">
+        <!-- Nutrition Strategy Card -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <h3><i class="fa-solid fa-apple-whole"></i> Nutrition & Macronutrient Strategy</h3>
+                    <p>Designed around your {{ plan.dietary_preference }} preference and {{ plan.fitness_goal }} goal.</p>
+                </div>
+            </div>
+            <div class="formatted-text-content">
+                <div class="markdown-body">
+                    {{ plan.nutrition_tips | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recovery & Longevity Protocol Card -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <h3><i class="fa-solid fa-heart-pulse"></i> Recovery, Sleep & Injury Prevention</h3>
+                    <p>Specific guidelines to optimize central nervous system recovery and tissue repair.</p>
+                </div>
+            </div>
+            <div class="formatted-text-content">
+                <div class="markdown-body">
+                    {{ plan.recovery_tips | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK & PLAN ADAPTATION SECTION -->
+    <div class="section-card feedback-section" id="feedbackSection">
+        <div class="section-card-header">
+            <div>
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Adaptive Feedback Engine</h3>
+                <p>Need adjustments? Tell Gemini what you want to change and get an updated 7-day routine in seconds.</p>
+            </div>
+        </div>
+
+        {% if plan.user_feedback %}
+        <div class="current-feedback-callout">
+            <div class="cf-header"><i class="fa-solid fa-comment-dots"></i> Most Recent Feedback:</div>
+            <div class="cf-body">"{{ plan.user_feedback }}"</div>
+            <div class="cf-footer">Plan updated automatically on {{ plan.updated_at.strftime('%B %d, %Y at %I:%M %p') if plan.updated_at else 'Recent' }}</div>
+        </div>
+        {% endif %}
+
+        <form action="/plan/{{ plan.id }}/feedback" method="POST" id="feedbackForm" class="feedback-form">
+            <div class="form-group">
+                <label for="feedbackInput">What would you like Gemini to modify in your workout plan?</label>
+                <textarea 
+                    name="feedback" 
+                    id="feedbackInput" 
+                    rows="4" 
+                    placeholder="e.g. 'My knees feel sore on squats, please swap with hip-thrusts or leg press.', 'I only have 30 minutes on Wednesdays, make Day 3 shorter.', or 'Too easy, increase the sets and intensity.'"
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Quick Feedback Suggestions / Chips -->
+            <div class="feedback-chips-row">
+                <span class="chips-label">Quick Suggestions:</span>
+                <button type="button" class="chip-btn" onclick="applySuggestion('Knee discomfort during squats. Please replace with knee-friendly quad & glute alternatives.')">
+                    <i class="fa-solid fa-plus"></i> Knee-friendly exercises
+                </button>
+                <button type="button" class="chip-btn" onclick="applySuggestion('Shorten workout duration to 35-40 minutes using supersets and shorter rest intervals.')">
+                    <i class="fa-solid fa-plus"></i> Shorten to 35 mins
+                </button>
+                <button type="button" class="chip-btn" onclick="applySuggestion('Increase upper body hypertrophy volume for chest and shoulders.')">
+                    <i class="fa-solid fa-plus"></i> More chest & shoulders
+                </button>
+                <button type="button" class="chip-btn" onclick="applySuggestion('I do not have access to barbells on Day 2, replace with dumbbell alternatives.')">
+                    <i class="fa-solid fa-plus"></i> Dumbbell substitutes
+                </button>
+            </div>
+
+            <div class="feedback-submit-wrap">
+                <button type="submit" id="feedbackBtn" class="btn btn-primary btn-glow">
+                    <span class="btn-text"><i class="fa-solid fa-arrows-rotate"></i> Revise Workout Plan with Gemini</span>
+                    <span class="btn-spinner hidden"><i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing Feedback & Re-optimizing...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
